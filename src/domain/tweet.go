@@ -2,20 +2,11 @@ package domain
 
 import "time"
 
-type Tweet struct {
-	User string
-	Text string
-	Date *time.Time
-}
-
-func NewTweet(user, text string) *Tweet{
-	date := time.Now()
-
-	tweet := Tweet{
-		user,
-		text,
-		&date,
-	}
-
-	return &tweet
+type Tweet interface{
+	Print() string
+	GetUser() *User
+	GetText() string
+	GetID() int64
+	GetDate() *time.Time
+	SetID(id int64)
 }
