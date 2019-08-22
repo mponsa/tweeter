@@ -1,6 +1,9 @@
 package service
 
-import "github.com/mponsa/tweeter/src/domain"
+import (
+	"github.com/mponsa/tweeter/src/domain"
+	"strings"
+)
 
 type MemoryTweetWriter struct{
 	tweets     []domain.Tweet
@@ -26,4 +29,12 @@ func (tweetWriter *MemoryTweetWriter) GetLastSavedTweet() domain.Tweet{
 	}
 
 	return nil
+}
+
+func (tweetWriter *MemoryTweetWriter) SearchTweetsWithQuery(query string, searchResult chan domain.Tweet){
+	for _, tweet := range tweetWriter.tweets{
+		if(strings.Contains(tweet.GetText(),query)){
+			searchResult <- tweet
+		}
+	}
 }

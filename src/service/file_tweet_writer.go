@@ -9,7 +9,7 @@ type FileTweetWriter struct{
 	file *os.File
 }
 
-func NewFileTweetWriter() *FileTweetWriter{
+func NewFileTweetWriter() TweetWriter{
 	file , _ := os.OpenFile(
 		"tweets.txt",
 		os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
@@ -32,3 +32,6 @@ func writeTweetInFile(tweet domain.Tweet,file *os.File){
 	}
 }
 
+func (tweetWriter *FileTweetWriter) SearchTweetsWithQuery(query string, searchResult chan domain.Tweet){
+
+}

@@ -3,6 +3,7 @@ package service_test
 import (
 	"github.com/mponsa/tweeter/src/domain"
 	"github.com/mponsa/tweeter/src/service"
+	"strings"
 	"testing"
 )
 
@@ -18,7 +19,7 @@ func TestPublishedTweetIsSaved(t *testing.T){
 	text := "First tweet"
 	tweet = domain.NewTextTweet(user,text) //Devuelve el puntero a tweet.
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 
 	//Operacion
 	tweetManager.PublishTweet(tweet)
@@ -42,7 +43,7 @@ func TestTweetWithoutUserIsNotPublished(t *testing.T){
 	userManager.LogIn(user.Username,user.Password)
 	text := "This is my first tweet"
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	tweet = domain.NewTextTweet(user,text)
 
 	//Operation
@@ -62,7 +63,7 @@ func TestTweetWithoutTextIsNotPublished(t *testing.T){
 	userManager.LogIn(user.Username,user.Password)
 	var text string;
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	tweet = domain.NewTextTweet(user,text)
 
 	//Operation
@@ -82,7 +83,7 @@ func TestTweetWhichExceeding140CharactersIsNotPublished(t *testing.T){
 	userManager.LogIn(user.Username,user.Password)
 	var text string = "aaaaaaaaakakakakakakakakakakakjsahfdkjadshkjsdhfkjaslhdfljkashdfkajshdfkjashdfkljashdfaskjdfhaskdjfhaskjdfhasksadjfhaskjdhfakshdfaksjhdfkasjhdfkjashdfkjhasdkfjhaskdjhfaksjhdfkajshdflkajshdflkjahsdfkajsdflkjhsalfkjhaskdjfhaskdhfkasdjhfkasjhdfksfkshfd";
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	tweet = domain.NewTextTweet(user,text)
 
 	//Operation
@@ -103,7 +104,7 @@ func TestPublishMultipleTweets(t *testing.T){
 	second_tweet := domain.NewTextTweet(user, "hola k ace")
 	third_tweet := domain.NewTextTweet(user, "hola k acessss")
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	tweetManager.PublishTweet(first_tweet)
 	tweetManager.PublishTweet(second_tweet)
 	tweetManager.PublishTweet(third_tweet)
@@ -130,7 +131,7 @@ func TestCanRetrieveTheTweetsSentByAnUser(t *testing.T){
 	second_tweet = domain.NewTextTweet(user,text)
 	third_tweet = domain.NewTextTweet(another_user,secondText)
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	tweetManager.PublishTweet(tweet)
 	tweetManager.PublishTweet(second_tweet)
 	tweetManager.PublishTweet(third_tweet)
@@ -157,7 +158,7 @@ func TestTweetWithUserNotLoggedInIsNotPublished(t *testing.T){
 	text := "My first tweet"
 	tweet = domain.NewTextTweet(user,text);
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	//Operation
 	var err error
 	_, err = tweetManager.PublishTweet(tweet)
@@ -178,7 +179,7 @@ func TestCanRetrieveTweetById(t *testing.T){
 	text := "First tweet"
 	tweet = domain.NewTextTweet(user,text) //Devuelve el puntero a tweet.
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	//Operacion
 	id, _ := tweetManager.PublishTweet(tweet)
 
@@ -205,7 +206,7 @@ func TestCanDeleteTweet(t *testing.T){
 	text := "First tweet"
 	tweet = domain.NewTextTweet(user,text) //Devuelve el puntero a tweet.
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 	id, _ := tweetManager.PublishTweet(tweet)
 
 	tweetManager.DeleteTweet(id)
@@ -226,7 +227,7 @@ func TestPublishedTweetIsSavedToExternalResource(t *testing.T){
 	text := "First tweet"
 	tweet := domain.NewTextTweet(user,text) //Devuelve el puntero a tweet.
 	tweetWriter := service.NewMemoryTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 
 	id, _ := tweetManager.PublishTweet(tweet)
 
@@ -249,8 +250,46 @@ func TestWriterCanWriteAFile(t *testing.T){
 	text := "First tweet"
 	tweet := domain.NewTextTweet(user,text) //Devuelve el puntero a tweet.
 	tweetWriter := service.NewFileTweetWriter() //MockImplementation
-	tweetManager := service.NewTweetMananager(tweetWriter)
+	tweetManager := service.NewTweetManager(tweetWriter)
 
 	tweetManager.PublishTweet(tweet)
+}
+
+func TestCanSearchForTweetContainingText(t *testing.T){
+	var tweetWriter service.TweetWriter
+	tweetWriter = service.NewMemoryTweetWriter()
+	tweetManager := service.NewTweetManager(tweetWriter)
+	// Create and publish a tweet
+	var tweet, second_tweet, third_tweet *domain.TextTweet
+	user := domain.NewUser("Hola","blablaasdasd","dasdawawd","asdasdasd")
+	userManager := service.NewUserManager()
+	userManager.RegisterUser(user.Name,user.Username,user.Email,user.Password)
+	userManager.LogIn(user.Username,user.Password)
+	another_user := domain.NewUser("Holaadasd","blablaasdawds","dasdawawd","asdasdasd")
+	userManager.RegisterUser(user.Name,user.Username,user.Email,user.Password)
+	userManager.LogIn(user.Username,user.Password)
+	text := "This is my first tweet"
+	secondText := "This is my second tweet"
+	tweet = domain.NewTextTweet(user,secondText)
+	second_tweet = domain.NewTextTweet(user,text)
+	third_tweet = domain.NewTextTweet(another_user,text)
+	tweetManager.PublishTweet(tweet)
+	tweetManager.PublishTweet(second_tweet)
+	tweetManager.PublishTweet(third_tweet)
+
+	// Operation
+	searchResult := make(chan domain.Tweet)
+	query := "first"
+	tweetManager.SearchTweetsContaining(query, searchResult)
+
+	// Validation
+	foundTweet := <-searchResult
+
+	if foundTweet == nil {
+		t.Error("Haven't fetched any tweets")
+	}
+	if !strings.Contains(foundTweet.GetText(), query) {
+		t.Errorf("Expected to find a tweet with %s but got %s",query,foundTweet.GetText())
+	}
 }
 

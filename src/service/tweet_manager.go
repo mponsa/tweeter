@@ -14,7 +14,7 @@ type TweetManager struct {
 	tweetWriter TweetWriter
 }
 
-func NewTweetMananager(tweetWriter TweetWriter) *TweetManager {
+func NewTweetManager(tweetWriter TweetWriter) *TweetManager {
 	tweetManager := new(TweetManager)
 	tweetManager.tweets = make([]domain.Tweet, 0)
 	tweetManager.tweetsUser = make(map[string][]	domain.Tweet)
@@ -109,3 +109,8 @@ func getTweetIndexInList(id int64, tweetList []domain.Tweet) int{
 	}
 	return -1
 }
+
+func (tweetManager *TweetManager) SearchTweetsContaining (query string, searchResult chan domain.Tweet){
+	go tweetManager.tweetWriter.SearchTweetsWithQuery(query,searchResult)
+}
+

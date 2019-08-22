@@ -7,7 +7,7 @@ import (
 )
 
 var tweetWriter = service.NewFileTweetWriter()
-var tweetManager = service.NewTweetMananager(tweetWriter)
+var tweetManager = service.NewTweetManager(tweetWriter)
 var userManager = service.NewUserManager()
 
 func main() {
