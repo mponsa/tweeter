@@ -29,7 +29,8 @@ func (tweetManager *TweetManager) PublishTweet(tweet domain.Tweet) (int64,error)
 		return 0 ,err
 	}
 
-	tweet.SetID(tweetManager.getLastTweetID() + 1)
+	tweetID := tweetManager.getLastTweetID() + 1
+	tweet.SetID(tweetID)
 
 	tweetManager.tweets = append(tweetManager.tweets, tweet)
 	tweetManager.tweetsUser[tweet.GetUser().Username] = append(tweetManager.tweetsUser[tweet.GetUser().Username],tweet)
@@ -56,18 +57,21 @@ func isValidTweet(tweet domain.Tweet) error{
 func (tweetManager *TweetManager) getLastTweetID() int64 {
 	totalTweets := len(tweetManager.tweets)
 	if(totalTweets == 0){
-		return 1
+		return 0
 	}
 	return tweetManager.tweets[totalTweets - 1].GetID()
 }
 
-func (tweetManager *TweetManager) GetTweets() []domain.Tweet {
-	return tweetManager.tweets
+func (tweetManager *TweetManager) GetTweets() ([]domain.Tweet, error) {
+	if(len(tweetManager.tweets) == 0){
+		return nil, fmt.Errorf(errors.ERROR_NO_TWEETS_FOUND)
+	}
+	return tweetManager.tweets, nil
 }
 
 func (tweetManager *TweetManager) GetTweetsByUser(username string) ([]domain.Tweet, error){
 	_, err := userManager.FindUser(username)
-	if(err != nil){
+	if err != nil {
 		return nil, fmt.Errorf(errors.ERROR_USER_NOT_REGISTERED)
 	}
 	return tweetManager.tweetsUser[username], nil

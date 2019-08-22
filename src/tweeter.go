@@ -6,6 +6,10 @@ import (
 	"github.com/mponsa/tweeter/src/service"
 )
 
+var tweetWriter = service.NewFileTweetWriter()
+var tweetManager = service.NewTweetMananager(tweetWriter)
+var userManager = service.NewUserManager()
+
 func main() {
 
 	shell := ishell.New()
@@ -22,14 +26,14 @@ func main() {
 
 			c.Print("Enter username: ")
 
-			user, _ := service.FindUser(c.ReadLine())
+			user, _ := userManager.FindUser(c.ReadLine())
 
 			c.Print("Write your tweet: ")
 
 			tweet := c.ReadLine()
 
 
-			_, err := service.PublishTweet(domain.NewTextTweet(user,tweet))
+			_, err := tweetManager.PublishTweet(domain.NewTextTweet(user,tweet))
 
 			if err != nil{
 				c.Print(err.Error())
@@ -47,10 +51,16 @@ func main() {
 
 			defer c.ShowPrompt(true)
 
-			fetched_tweets := service.GetTweets()
+			fetched_tweets, err := tweetManager.GetTweets()
 
-			for index, tweet := range fetched_tweets {
-				c.Printf("%d %s : %s %s",index,tweet.User.Username,tweet.Text,tweet.Date.Format("01-10-2019"))
+			if err != nil {
+				c.Printf(err.Error())
+
+				return
+			}
+
+			for _, tweet := range fetched_tweets {
+				c.Printf(tweet.Print())
 			}
 
 
@@ -72,10 +82,10 @@ func main() {
 			c.Print("Enter your password: ")
 			password := c.ReadLine()
 
-			registeredUser := service.RegisterUser(name, user, email, password)
+			registeredUser := userManager.RegisterUser(name, user, email, password)
 
-			if (registeredUser != nil) {
-				c.Print(" %s registered! ", registeredUser.Username)
+			if registeredUser != nil {
+				c.Printf(" %s registered! ", registeredUser.Username)
 			}
 			return
 		},
@@ -91,9 +101,9 @@ func main() {
 			c.Print("Enter your password: ")
 			password := c.ReadLine()
 
-			err := service.LogIn(user, password)
+			err := userManager.LogIn(user, password)
 
-			if (err != nil) {
+			if err != nil {
 				c.Print(err.Error())
 			}
 			return

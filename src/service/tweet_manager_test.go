@@ -24,7 +24,8 @@ func TestPublishedTweetIsSaved(t *testing.T){
 	tweetManager.PublishTweet(tweet)
 
 	//Validacion
-	var publishedTweet = tweetManager.GetTweets()[len(tweetManager.GetTweets())-1]
+	tweets, _ := tweetManager.GetTweets()
+	var publishedTweet = tweets[len(tweets) - 1]
 	if publishedTweet.GetUser() != user && publishedTweet.GetText() != text {
 		t.Errorf("Expected tweet is %s: %s \n but received: %s:%s",user,text,publishedTweet.GetUser(),publishedTweet.GetText())
 	}
