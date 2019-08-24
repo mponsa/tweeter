@@ -1,4 +1,4 @@
-package main
+package console
 
 import (
 	"github.com/abiosoft/ishell"
@@ -10,12 +10,11 @@ var tweetWriter = service.NewFileTweetWriter()
 var tweetManager = service.NewTweetManager(tweetWriter)
 var userManager = service.NewUserManager()
 
-func main() {
+func Run() {
 
 	shell := ishell.New()
 	shell.SetPrompt("Tweeter >> ")
 	shell.Print("Type 'help' to know commands\n")
-
 
 	shell.AddCmd(&ishell.Cmd{
 		Name: "publishTweet",
@@ -32,13 +31,14 @@ func main() {
 
 			tweet := c.ReadLine()
 
+			_, err := tweetManager.PublishTweet(domain.NewTextTweet(user, tweet))
 
-			_, err := tweetManager.PublishTweet(domain.NewTextTweet(user,tweet))
-
-			if err != nil{
+			if err != nil {
 				c.Print(err.Error())
+
+				return
 			}
-			c.Print("TextTweet sent\n")
+			c.Print("Tweet sent\n")
 
 			return
 		},
@@ -62,7 +62,6 @@ func main() {
 			for _, tweet := range fetched_tweets {
 				c.Printf(tweet.Print())
 			}
-
 
 			return
 		},

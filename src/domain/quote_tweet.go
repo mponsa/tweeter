@@ -4,10 +4,10 @@ import "time"
 
 type QuoteTweet struct {
 	TextTweet
-	quote *TextTweet
+	quote Tweet
 }
 
-func NewQuoteTweet(user *User, text string, quotedText *TextTweet) *QuoteTweet{
+func NewQuoteTweet(user *User, text string, quotedText Tweet) *QuoteTweet{
 	date := time.Now()
 
 	tweet := QuoteTweet{
@@ -24,5 +24,5 @@ func NewQuoteTweet(user *User, text string, quotedText *TextTweet) *QuoteTweet{
 }
 
 func (tweet *QuoteTweet) PrintableTweet() string{
-	return "@"+tweet.GetUser().Username+": "+tweet.GetText()+` "`+tweet.quote.PrintableTweet()+`"`
+	return "@"+tweet.GetUser().Username+": "+tweet.GetText()+` "`+tweet.quote.Print()+`"`
 }
